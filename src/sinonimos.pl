@@ -1,7 +1,5 @@
-% sinonimos: clausura bidireccional
+% sinonimos: clausura en ambas direcciones y resolución en consultas
 
-% canonico = atomo menor de la clase
-% visitados evita ciclos
 forma_canonica(Termino, Canonico) :-
     clausura_sinonimos(Termino, Clase, []),
     sort(Clase, Ordenados),
@@ -31,9 +29,35 @@ son_equivalentes(A, B) :-
     forma_canonica(B, Canonico),
     !.
 
-% concepto por sinonimo de la clase
-concepto_de_termino(Termino, Clave, Texto) :-
+miembros_sinonimos(Termino, Miembros) :-
     clausura_sinonimos(Termino, Clase, []),
-    member(Clave, Clase),
+    sort(Clase, Miembros).
+
+% hechos enlazados por cualquier miembro de la clase de sinonimos
+es_un_por_sinonimo(X, Y) :-
+    miembros_sinonimos(X, Miembros),
+    member(M, Miembros),
+    es_un(M, Y).
+
+tiene_por_sinonimo(X, P) :-
+    miembros_sinonimos(X, Miembros),
+    member(M, Miembros),
+    tiene(M, P).
+
+concepto_de_termino(Termino, Clave, Texto) :-
+    miembros_sinonimos(Termino, Miembros),
+    member(Clave, Miembros),
     concepto(Clave, Texto),
+    !.
+
+termino_presente_en_kb(Termino) :-
+    miembros_sinonimos(Termino, Miembros),
+    member(M, Miembros),
+    (   concepto(M, _)
+    ;   es_un(M, _)
+    ;   es_un(_, M)
+    ;   tiene(M, _)
+    ;   relacion(M, _, _)
+    ;   relacion(_, _, M)
+    ),
     !.

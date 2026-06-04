@@ -7,18 +7,36 @@ responder_concepto(Termino) :-
     concepto_de_termino(Termino, Clave, Texto),
     format('Bot> ~w: ~s~n', [Clave, Texto]).
 
-% fail avisa al caller sin concepto
-responder_inferencia(Termino) :-
+% categorias, propiedades con explicacion y relaciones
+responder_datos_termino(Termino) :-
     forma_canonica(Termino, Canonico),
-    (   listar_categorias(Canonico, Categorias), Categorias \== []
-    ->  mostrar_categorias(Canonico, Categorias)
-    ;   true
+    listar_categorias(Canonico, Categorias),
+    listar_propiedades(Canonico, Propiedades),
+    listar_relaciones_desde(Canonico, Relaciones),
+    (   Categorias \== []
+    ;   Propiedades \== []
+    ;   Relaciones \== []
     ),
-    (   listar_propiedades(Canonico, Propiedades), Propiedades \== []
-    ->  mostrar_propiedades(Canonico, Propiedades),
-        fail
-    ;   fail
-    ).
+    (   Categorias \== [] -> mostrar_categorias(Canonico, Categorias) ; true ),
+    (   Propiedades \== [] -> mostrar_propiedades_explicadas(Canonico, Propiedades) ; true ),
+    (   Relaciones \== [] -> mostrar_relaciones(Canonico, Relaciones) ; true ).
+
+responder_relacion_verbo(Sujeto, Relacion) :-
+    forma_canonica(Sujeto, Canon),
+    findall(Objeto, relacion_desde(Sujeto, Relacion, Objeto), Objetos),
+    Objetos \== [],
+    mostrar_relacion_verbo(Canon, Relacion, Objetos).
+
+responder_relacion_entre(X, Y) :-
+    listar_relaciones_entre(X, Y, Relaciones),
+    forma_canonica(X, CanonX),
+    forma_canonica(Y, CanonY),
+    mostrar_relacion_entre(CanonX, CanonY, Relaciones).
+
+responder_listar_relaciones(Sujeto) :-
+    forma_canonica(Sujeto, Canon),
+    listar_relaciones_desde(Sujeto, Relaciones),
+    mostrar_relaciones(Canon, Relaciones).
 
 mostrar_categorias(Termino, [Cat|Resto]) :-
     format('Bot> ~w es un ~w', [Termino, Cat]),
@@ -30,15 +48,34 @@ mostrar_categorias_resto([Cat|Resto]) :-
     mostrar_categorias_resto(Resto).
 mostrar_categorias_resto([]) :- true.
 
-mostrar_propiedades(Termino, [P|Resto]) :-
-    format('Bot> ~w tiene la propiedad: ~w~n', [Termino, P]),
-    mostrar_propiedades(Termino, Resto).
-mostrar_propiedades(_, []).
+mostrar_propiedades_explicadas(Termino, [P|Resto]) :-
+    explicar_inferencia(Termino, P, Explicacion),
+    responder(Explicacion),
+    mostrar_propiedades_explicadas(Termino, Resto).
+mostrar_propiedades_explicadas(_, []).
+
+mostrar_relacion_verbo(Sujeto, Relacion, [Objeto|Resto]) :-
+    format(string(Msg), '~w ~w ~w.', [Sujeto, Relacion, Objeto]),
+    responder(Msg),
+    mostrar_relacion_verbo(Sujeto, Relacion, Resto).
+mostrar_relacion_verbo(_, _, []).
+
+mostrar_relacion_entre(X, Y, [R|Resto]) :-
+    format(string(Msg), '~w ~w ~w.', [X, R, Y]),
+    responder(Msg),
+    mostrar_relacion_entre(X, Y, Resto).
+mostrar_relacion_entre(_, _, []).
+
+mostrar_relaciones(Sujeto, [par(R, O)|Resto]) :-
+    format(string(Msg), '~w ~w ~w.', [Sujeto, R, O]),
+    responder(Msg),
+    mostrar_relaciones(Sujeto, Resto).
+mostrar_relaciones(_, []).
 
 bienvenida :-
     nl,
     responder('Bienvenido al Chatbot Inteligente (Paradigma Logico).'),
-    responder('Puedes preguntar (que es Prolog?), aprender hechos o escribir salir.'),
+    responder('Pregunta (que es Prolog?), relaciones (que usa ia) o aprende hechos.'),
     nl.
 
 despedida :-
@@ -59,4 +96,4 @@ respuesta_agradecimiento :-
     responder('De nada! Para eso estoy.').
 
 ofrecer_ensenar :-
-    responder('Puedes ensenarme con frases como: aprender que X es ...').
+    responder('Ejemplos: aprender que X es ..., aprender que ia utiliza red_neuronal.').
