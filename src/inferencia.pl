@@ -1,39 +1,37 @@
-% inferencia: es_un y tiene
+% inferencia: es_un, tiene y relaciones (con sinonimos)
 
-% visitados corta ciclos de es_un
 es_categoria(X, Y) :-
     es_categoria_aux(X, Y, []).
 
 es_categoria_aux(X, Y, _) :-
-    es_un(X, Y).
+    es_un_por_sinonimo(X, Y).
 es_categoria_aux(X, Z, Visitados) :-
-    es_un(X, Intermedio),
+    es_un_por_sinonimo(X, Intermedio),
     \+ member(Intermedio, Visitados),
     es_categoria_aux(Intermedio, Z, [Intermedio|Visitados]).
 
-% tiene directo o por herencia
 propiedad_de(X, P) :-
     propiedad_de_aux(X, P, []).
 
 propiedad_de_aux(X, P, _) :-
-    tiene(X, P).
+    tiene_por_sinonimo(X, P).
 propiedad_de_aux(X, P, Visitados) :-
-    es_un(X, Categoria),
+    es_un_por_sinonimo(X, Categoria),
     \+ member(Categoria, Visitados),
     propiedad_de_aux(Categoria, P, [Categoria|Visitados]).
 
-% string explicando X tiene P
 explicar_inferencia(X, P, Explicacion) :-
-    (   tiene(X, P)
+    forma_canonica(X, Canon),
+    (   tiene_por_sinonimo(Canon, P)
     ->  format(string(Explicacion),
-               '~w tiene ~w directamente.', [X, P])
-    ;   cadena_herencia(X, P, Cadena),
+               '~w tiene ~w directamente.', [Canon, P])
+    ;   cadena_herencia(Canon, P, Cadena),
         formatear_explicacion(Cadena, Explicacion)
     ).
 
 cadena_herencia(X, P, [paso(X, Categoria)|Resto]) :-
-    es_un(X, Categoria),
-    (   tiene(Categoria, P)
+    es_un_por_sinonimo(X, Categoria),
+    (   tiene_por_sinonimo(Categoria, P)
     ->  Resto = [tiene(Categoria, P)]
     ;   cadena_herencia(Categoria, P, Resto)
     ).
@@ -54,9 +52,34 @@ cadena_a_texto(Cadena, Texto) :-
            '~w es un ~w, y ~s', [X, Cat1, RestoTexto]).
 
 listar_propiedades(X, Propiedades) :-
-    findall(P, propiedad_de(X, P), Todas),
+    forma_canonica(X, Canon),
+    findall(P, propiedad_de(Canon, P), Todas),
     sort(Todas, Propiedades).
 
 listar_categorias(X, Categorias) :-
-    findall(C, es_categoria(X, C), Todas),
+    forma_canonica(X, Canon),
+    findall(C, es_categoria(Canon, C), Todas),
     sort(Todas, Categorias).
+
+relacion_desde(Sujeto, Relacion, Objeto) :-
+    miembros_sinonimos(Sujeto, Miembros),
+    member(M, Miembros),
+    relacion(M, Relacion, Objeto).
+
+relacion_entre(Sujeto, Objeto, Relacion) :-
+    miembros_sinonimos(Sujeto, Ms),
+    miembros_sinonimos(Objeto, Mo),
+    member(S, Ms),
+    member(O, Mo),
+    relacion(S, Relacion, O).
+
+listar_relaciones_desde(Sujeto, Trios) :-
+    forma_canonica(Sujeto, Canon),
+    findall(par(R, O), relacion_desde(Canon, R, O), Todas),
+    sort(Todas, Trios),
+    Trios \== [].
+
+listar_relaciones_entre(Sujeto, Objeto, Relaciones) :-
+    findall(R, relacion_entre(Sujeto, Objeto, R), Todas),
+    sort(Todas, Relaciones),
+    Relaciones \== [].
