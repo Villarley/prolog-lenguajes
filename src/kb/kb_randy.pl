@@ -77,6 +77,7 @@ es_un(gato, mascota).
 es_un(canario, mascota).
 
 % caracteristicas
+tiene(animal, vida).
 tiene(mamifero, pelo).
 tiene(mamifero, glandulas_mamarias).
 tiene(ave, plumas).
