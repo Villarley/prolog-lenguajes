@@ -1,6 +1,6 @@
 # Chatbot Inteligente con Programación Lógica
 
-Proyecto universitario del curso **Paradigma Lógico** (TEC). Implementa un chatbot conversacional en **SWI-Prolog** con base de conocimiento, inferencia lógica, sinónimos y aprendizaje dinámico en memoria.
+
 
 ## Descripción
 
