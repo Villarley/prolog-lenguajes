@@ -1,8 +1,5 @@
 % chatbot: bucle recursivo
 
-% un turno y vuelve a conversar
-% normalizar_entrada conserva que/es
-
 iniciar :-
     bienvenida,
     conversar.
@@ -46,6 +43,15 @@ manejar(intencion(agradecer), seguir) :-
 manejar(intencion(consultar, Termino), seguir) :-
     manejar_consulta(Termino).
 
+manejar(intencion(consultar_relacion, Sujeto, Relacion), seguir) :-
+    manejar_consulta_relacion(Sujeto, Relacion).
+
+manejar(intencion(consultar_relacion_entre, X, Y), seguir) :-
+    manejar_consulta_relacion_entre(X, Y).
+
+manejar(intencion(listar_relaciones, Sujeto), seguir) :-
+    manejar_listar_relaciones(Sujeto).
+
 manejar(intencion(aprender_concepto, Clave, Texto), seguir) :-
     manejar_aprender_concepto(Clave, Texto).
 
@@ -55,29 +61,45 @@ manejar(intencion(aprender_sinonimo, A, B), seguir) :-
 manejar(intencion(aprender_es_un, X, Y), seguir) :-
     aprender_es_un(X, Y).
 
+manejar(intencion(aprender_relacion, X, R, Y), seguir) :-
+    aprender_relacion(X, R, Y).
+
 manejar(intencion(desconocido, _), seguir) :-
     no_entiendo,
     ofrecer_ensenar.
 
-% concepto, inferencia, sino definicion
 manejar_consulta(Termino) :-
     (   responder_concepto(Termino)
-    ->  true
-    ;   (   responder_inferencia_parcial(Termino)
+    ->  (   responder_datos_termino(Termino)
+        ->  true
+        ;   true
+        )
+    ;   (   responder_datos_termino(Termino)
         ->  true
         ;   flujo_aprendizaje(Termino)
         )
     ).
 
-responder_inferencia_parcial(Termino) :-
-    forma_canonica(Termino, Canonico),
-    listar_categorias(Canonico, Categorias),
-    listar_propiedades(Canonico, Propiedades),
-    (   Categorias \== []
-    ;   Propiedades \== []
-    ),
-    (   Categorias \== [] -> mostrar_categorias(Canonico, Categorias) ; true ),
-    (   Propiedades \== [] -> mostrar_propiedades(Canonico, Propiedades) ; true ).
+manejar_consulta_relacion(Sujeto, Relacion) :-
+    (   responder_relacion_verbo(Sujeto, Relacion)
+    ->  true
+    ;   no_entiendo,
+        ofrecer_ensenar
+    ).
+
+manejar_consulta_relacion_entre(X, Y) :-
+    (   responder_relacion_entre(X, Y)
+    ->  true
+    ;   no_entiendo,
+        ofrecer_ensenar
+    ).
+
+manejar_listar_relaciones(Sujeto) :-
+    (   responder_listar_relaciones(Sujeto)
+    ->  true
+    ;   no_entiendo,
+        ofrecer_ensenar
+    ).
 
 flujo_aprendizaje(Termino) :-
     no_entiendo,

@@ -1,5 +1,5 @@
 % tests plunit chatbot
-% swipl -g run_tests tests/test_chatbot.pl
+% swipl -g "run_tests, halt." -t halt tests/test_chatbot.pl
 
 :- set_prolog_flag(encoding, utf8).
 
@@ -39,11 +39,17 @@ test(forma_canonica_sinonimo_inverso) :-
 test(son_equivalentes) :-
     son_equivalentes(pl, lenguaje_logico).
 
+test(concepto_por_sinonimo_ia) :-
+    concepto_de_termino(inteligencia_artificial, ia, _).
+
 test(es_categoria_transitivo) :-
     es_categoria(prolog, lenguaje_programacion), !.
 
 test(propiedad_de_herencia_perro) :-
     propiedad_de(perro, vida), !.
+
+test(propiedad_de_sinonimo_felino) :-
+    propiedad_de(felino, pelo), !.
 
 test(propiedad_de_directo) :-
     propiedad_de(lenguaje_logico, backtracking), !.
@@ -72,8 +78,36 @@ test(palabras_clave_sin_stopwords) :-
 test(interprete_consultar) :-
     interpretar([que, es, prolog], intencion(consultar, prolog)).
 
+test(interprete_consultar_variacion) :-
+    interpretar([explique, prolog], intencion(consultar, prolog)).
+
+test(interprete_consultar_por_clave) :-
+    interpretar([dime, que, es, el, prolog], intencion(consultar, prolog)).
+
+test(interprete_consultar_ml_sinonimo) :-
+    interpretar([que, es, ml], intencion(consultar, ml)).
+
 test(interprete_aprender_es_un) :-
     interpretar([aprender, que, un, gato, es, un, animal],
                 intencion(aprender_es_un, gato, animal)).
+
+test(interprete_aprender_relacion) :-
+    interpretar([aprender, que, ia, utiliza, red_neuronal],
+                intencion(aprender_relacion, ia, utiliza, red_neuronal)).
+
+test(interprete_consultar_relacion) :-
+    interpretar([que, utiliza, ia],
+                intencion(consultar_relacion, ia, utiliza)).
+
+test(explicar_inferencia_perro_vida) :-
+    explicar_inferencia(perro, vida, Explicacion),
+    sub_atom(Explicacion, _, _, _, 'vida'),
+    !.
+
+test(relacion_desde_ia) :-
+    relacion_desde(ia, utiliza, red_neuronal), !.
+
+test(responder_relacion_verbo) :-
+    responder_relacion_verbo(ia, utiliza).
 
 :- end_tests(-).

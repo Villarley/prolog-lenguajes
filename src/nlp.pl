@@ -10,6 +10,9 @@ normalizar_entrada(StringEntrada, ListaAtomosTokens) :-
 quitar_stopwords(Tokens, TokensFiltrados) :-
     exclude(es_stopword, Tokens, TokensFiltrados).
 
+tokens_clave(Tokens, Keywords) :-
+    quitar_stopwords(Tokens, Keywords).
+
 palabras_clave(StringEntrada, Keywords) :-
     trim_string(StringEntrada, Limpia),
     normalizar_entrada(Limpia, Tokens),
@@ -57,6 +60,8 @@ stopword(le).
 stopword(su).
 stopword(mi).
 stopword(tu).
+stopword(describe).
+stopword(definicion).
 
 es_stopword(Palabra) :-
     stopword(Palabra).
