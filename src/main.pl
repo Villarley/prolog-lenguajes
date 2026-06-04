@@ -5,7 +5,7 @@
 cargar_todas(Dir) :-
     cargar(Dir, 'kb/kb_core.pl'),
     cargar(Dir, 'kb/kb_santiago.pl'),
-    cargar(Dir, 'kb/kb_integrante2.pl'),
+    cargar(Dir, 'kb/kb_randy.pl'),
     cargar(Dir, 'kb/kb_integrante3.pl'),
     cargar(Dir, 'sinonimos.pl'),
     cargar(Dir, 'nlp.pl'),
